@@ -2,25 +2,25 @@ from typing import Self
 
 from lxml import etree
 
-from .types import XMLElement
+from .types import ElementType
 
 
 class Element:
-    def __init__(self, etype: XMLElement, attributes: dict):
-        self._etype: XMLElement = etype
+    def __init__(self, etype: ElementType, attributes: dict):
+        self._etype: ElementType = etype
         self._attributes: dict = attributes
         self._elements: list[Element] = []
         self._text: str | None = None
 
     @classmethod
-    def new(cls, etype: XMLElement, **attributes: dict):
+    def new(cls, etype: ElementType, **attributes: dict):
         """ Create a new Element object from scratch """
         return cls(etype, attributes)
 
     @classmethod
     def from_etree(cls, tree: etree.Element) -> Self:
         """ Create a new Element object from a xml etree element """
-        element = cls(XMLElement(tree.tag.split('}')[1]), dict(tree.items()))
+        element = cls(ElementType(tree.tag.split('}')[1]), dict(tree.items()))
         element.text = tree.text
         for child in tree:
             element.add_element(Element.from_etree(child))
@@ -40,7 +40,7 @@ class Element:
         return element
 
     @property
-    def etype(self) -> XMLElement:
+    def etype(self) -> ElementType:
         return self._etype
 
     @property
@@ -83,7 +83,7 @@ class Element:
         else:
             self._elements.insert(index, element)
 
-    def create_element(self, etype: XMLElement, index: int = None, **attributes: dict) -> Self:
+    def create_element(self, etype: ElementType, index: int = None, **attributes: dict) -> Self:
         """ Create a new element and add it to the elements list """
         element = Element.new(etype, **attributes)
         self.add_element(element, index)

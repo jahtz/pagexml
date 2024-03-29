@@ -2,7 +2,7 @@ from typing import Self
 
 from lxml import etree
 
-from .types import XMLElement
+from .types import ElementType
 from .element import Element
 
 
@@ -42,10 +42,11 @@ class Page:
         page = etree.Element('Page', **self._attributes)
 
         # create reading order element
-        reading_order = etree.SubElement(page, 'ReadingOrder')
-        order_group = etree.SubElement(reading_order, 'OrderedGroup', id='g0')  # does id matter?
-        for i, rid in enumerate(self._ro):
-            etree.SubElement(order_group, 'RegionRefIndexed', index=str(i), regionRef=rid)
+        if len(self._ro) > 0:
+            reading_order = etree.SubElement(page, 'ReadingOrder')
+            order_group = etree.SubElement(reading_order, 'OrderedGroup', id='g0')  # does id matter?
+            for i, rid in enumerate(self._ro):
+                etree.SubElement(order_group, 'RegionRefIndexed', index=str(i), regionRef=rid)
 
         # add elements
         for element in self._elements:
@@ -55,12 +56,23 @@ class Page:
 
     @property
     def attributes(self) -> dict:
+        """ Page attributes """
         return self._attributes
 
     @property
     def elements(self) -> list[Element]:
         """ List of elements """
         return self.elements
+
+    @property
+    def reading_order(self) -> list[str]:
+        """ List of region id's in reading order """
+        return self._ro
+
+    @reading_order.setter
+    def reading_order(self, new_reading_order: list[str]):
+        """ Set the reading order """
+        self._ro = new_reading_order
 
     def set_attribute(self, key: str, value: str):
         """ Set an attribute """
@@ -81,7 +93,7 @@ class Page:
             if element.is_region and reading_order:
                 self._ro.insert(index, element.attributes['id'])
 
-    def create_element(self, etype: XMLElement, index: int = None, **attributes: dict) -> Element:
+    def create_element(self, etype: ElementType, index: int = None, **attributes: dict) -> Element:
         """ Create a new element and add it to the elements list """
         element = Element.new(etype, **attributes)
         self.add_element(element, index)

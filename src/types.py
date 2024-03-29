@@ -1,12 +1,17 @@
 from enum import Enum
 
 
-class XMLElement(Enum):
+class ElementType(Enum):
     """
     Based on information from
     https://ocr-d.de/de/gt-guidelines/pagexml/pagecontent_xsd_Complex_Type_pc_PcGtsType.html#PcGtsType_Page
     (some of the elements included in the link above may not be included here)
     """
+    # ReadingOrder
+    ReadingOrder = "ReadingOrder"
+    OrderedGroup = "OrderedGroup"
+    RegionRefIndexed = "RegionRefIndexed"
+
     # Regions
     AdvertRegion = "AdvertRegion"
     ChartRegion = "ChartRegion"
