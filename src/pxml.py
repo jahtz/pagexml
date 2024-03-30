@@ -24,19 +24,24 @@ class PageXML:
     def from_etree(cls, tree: etree.Element) -> Self:
         """ Create a new PageXML object from a xml etree element """
         # PageXML element with metadata
-        if md_tree := tree.find('./{*}Metadata') is not None:
-            if creator := md_tree.find('./{*}Creator') is not None:
+        md_tree = tree.find('./{*}Metadata')
+        if md_tree is not None:
+            creator = md_tree.find('./{*}Creator')
+            if creator is not None:
                 creator = creator.text
-            if created := md_tree.find('./{*}Created') is not None:
+            created = md_tree.find('./{*}Created')
+            if created is not None:
                 created = created.text
-            if last_change := md_tree.find('./{*}LastChange') is not None:
+            last_change = md_tree.find('./{*}LastChange')
+            if last_change is not None:
                 last_change = last_change.text
             pxml = cls(creator, created, last_change)
         else:
             pxml = cls.new()
 
         # page elements
-        if pages := tree.findall('./{*}Page') is not None:
+        pages = tree.findall('./{*}Page')
+        if pages is not None:
             for page_tree in pages:
                 pxml.add_page(Page.from_etree(page_tree))
 
