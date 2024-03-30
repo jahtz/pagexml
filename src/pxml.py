@@ -143,8 +143,3 @@ class PageXML:
     def clear_pages(self):
         """ Remove all pages """
         self._pages.clear()
-
-
-if __name__ == '__main__':
-    a = PageXML.from_xml(Path("/home/janik/Seafile/zpd/projects/transcribus/nbdh_1-167_061.xml"))
-    a.to_xml(Path('/home/janik/Desktop/out.xml'))

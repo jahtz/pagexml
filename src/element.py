@@ -96,4 +96,3 @@ class Element:
     def remove_element_by_index(self, index: int) -> Self:
         """ Remove an element from the elements list by its index """
         return self._elements.pop(index)
-
