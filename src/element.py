@@ -41,18 +41,22 @@ class Element:
 
     @property
     def etype(self) -> ElementType:
+        """ Element type """
         return self._etype
 
     @property
     def attributes(self) -> dict:
+        """ Element attributes """
         return self._attributes
 
     @property
     def text(self) -> str | None:
+        """ Element text """
         return self._text
 
     @text.setter
     def text(self, value: str):
+        """ Set the element text """
         self._text = value
 
     @property
