@@ -23,10 +23,8 @@ class Page:
         page = cls(dict(tree.items()))
 
         # reading order
-        ro = tree.find('./{*}ReadingOrder')
-        if ro is not None:
-            ro_elements = tree.findall('../{*}RegionRefIndexed')
-            if ro_elements is not None:
+        if (ro := tree.find('./{*}ReadingOrder')) is not None:
+            if (ro_elements := tree.findall('../{*}RegionRefIndexed')) is not None:
                 page._ro = list([i.get('regionRef') for i in sorted(list(ro_elements), key=lambda i: i.get('index'))])
             tree.remove(ro)
 
