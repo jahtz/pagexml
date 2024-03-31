@@ -11,6 +11,7 @@ pip3 install -r ./pagexml/requirements.txt
 ```python
 from pagexml import PageXML, Page, Element, ElementType
 
+
 # Create new PageXML object
 pxml = PageXML.new('some creator')
 
@@ -20,22 +21,38 @@ pxml = PageXML.from_xml('path/to/file.xml')
 # Load PageXML object from lxml.etree object
 pxml = PageXML.from_etree(etree)
 
-
 # Create new Page
 page = pxml.create_page(imageFilename='image.jpg', width=1000, height=1000)
+# or
+page2 = Page.new(**{'imageFilename': 'image.jpg', 'width': 1000, 'height': 1000})
+pxml.add_page(page2)
 
-# Manipulate Page attributes
+# Create new Region or Element 
+region = page.create_element(ElementType.TextRegion, **{'id': 'r1', 'more_attrs':'attribute', ...})
+# or
+line = Element.new(ElementType.TextLine, id='l1')
+region.add_element(line)
+# Regions will automatically be appended to ReadingOrder
+# prevent with 'reading_order=False' argument
+
+# add text to an Element
+line.text = 'Hello World!'
+# or remove it
+line.text = None
+
+# Manipulate or add Page or Element attributes
 page.set_attribute('imageFilename', 'new_image.jpg')
+# or
+page['imageFilename'] = 'new_image.jpg'
 
-# Add element (Region,...)
-# with create_element method on parent
-region = page.create_element(ElementType.TextRegion, id='r1', more_attrs='attribute', ...)
-# or Element constructor
-attributes = {"id": "l1", "more_attrs": "attribute", ...}
-element = Element.new(ElementType.TextLine, **attributes)
-element.text = "Hello, World!"
-region.add_element(element)
-#...
+# Remove attribute
+del page.attributes['key']
+# or
+page.attributes.pop('key', None)  # prevents KeyError
+
+# Iterate over Pages, Regions or Elements
+for page in pxml:
+    print(len(page))  # print number of Regions and Elements
 
 # Convert PageXML object to lxml.etree object
 tree = pxml.to_etree()
