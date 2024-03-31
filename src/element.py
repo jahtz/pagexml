@@ -12,6 +12,38 @@ class Element:
         self._elements: list[Element] = []
         self._text: str | None = None
 
+    def __len__(self) -> int:
+        """ Return number of elements """
+        return len(self._elements)
+
+    def __iter__(self) -> Self:
+        """ Iterate through the list of elements """
+        self.__n = 0
+        return self
+
+    def __next__(self) -> Self:
+        """ Iterate through the list of elements """
+        if self.__n < len(self._elements):
+            element = self._elements[self.__n]
+            self.__n += 1
+            return element
+        else:
+            raise StopIteration
+
+    def __getitem__(self, attribute: str) -> str | None:
+        """ Get attribute with brackets """
+        if attribute in self._attributes:
+            return self._attributes[attribute]
+        return None
+
+    def __setitem__(self, key: str, value: str):
+        """ Set attribute with brackets """
+        self._attributes[str(key)] = str(value)
+
+    def __contains__(self, key: str) -> bool:
+        """ Check if attribute exists """
+        return key in self._attributes
+
     @classmethod
     def new(cls, etype: ElementType, **attributes: dict):
         """ Create a new Element object from scratch """

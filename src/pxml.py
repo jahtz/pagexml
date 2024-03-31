@@ -15,6 +15,24 @@ class PageXML:
         self._last_change: str = last_change
         self._pages: list[Page] = []
 
+    def __len__(self) -> int:
+        """ Return number of pages """
+        return len(self._pages)
+
+    def __iter__(self) -> Self:
+        """ Iterate through the list of pages """
+        self.__n = 0
+        return self
+
+    def __next__(self) -> Page:
+        """ Iterate through the list of pages """
+        if self.__n < len(self._pages):
+            page = self._pages[self.__n]
+            self.__n += 1
+            return page
+        else:
+            raise StopIteration
+
     @classmethod
     def new(cls, creator: str = 'ZPD Wuerzburg'):
         """ Create a new PageXML object from scratch """
