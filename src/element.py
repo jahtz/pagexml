@@ -87,7 +87,7 @@ class Element:
         return self._text
 
     @text.setter
-    def text(self, value: str):
+    def text(self, value: str | None):
         """ Set the element text """
         self._text = value
 
