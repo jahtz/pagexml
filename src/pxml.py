@@ -33,6 +33,23 @@ class PageXML:
         else:
             raise StopIteration
 
+    def __getitem__(self, key: int) -> Page | None:
+        """ Get page with brackets operator """
+        if key < len(self._pages):
+            return self._pages[key]
+        return None
+
+    def __setitem__(self, key: int, value: Page):
+        """ Set page with brackets operator """
+        if key < len(self._pages):
+            self._pages[key] = value
+
+    def __contains__(self, key: Page) -> bool:
+        """ Check if page exists """
+        if isinstance(key, Page):
+            return key in self._pages
+        return False
+
     @classmethod
     def new(cls, creator: str = 'ZPD Wuerzburg'):
         """ Create a new PageXML object from scratch """
