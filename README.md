@@ -40,10 +40,21 @@ line.text = 'Hello World!'
 # or remove it
 line.text = None
 
+# Access Pages, Regions or Elements by index
+page0 = pxml[0]
+page[1] = region
+
+
 # Manipulate or add Page or Element attributes
 page.set_attribute('imageFilename', 'new_image.jpg')
 # or
 page['imageFilename'] = 'new_image.jpg'
+
+# Check for attribute
+print('imageFilname' in page)  # prints True if 'imageFilename' is in page.attributes
+
+# Check for Page, Region or Element
+print(region in page)  # prints True if a region object is in page.elements
 
 # Remove attribute
 del page.attributes['key']
@@ -53,6 +64,7 @@ page.attributes.pop('key', None)  # prevents KeyError
 # Iterate over Pages, Regions or Elements
 for page in pxml:
     print(len(page))  # print number of Regions and Elements
+    
 
 # Convert PageXML object to lxml.etree object
 tree = pxml.to_etree()

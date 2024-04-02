@@ -30,19 +30,29 @@ class Element:
         else:
             raise StopIteration
 
-    def __getitem__(self, attribute: str) -> str | None:
-        """ Get attribute with brackets """
-        if attribute in self._attributes:
-            return self._attributes[attribute]
+    def __getitem__(self, key: str | int) -> str | Self | None:
+        """ Get attribute or element with brackets operator """
+        if isinstance(key, int):
+            return self._elements[key]
+        elif isinstance(key, str):
+            if key in self._attributes:
+                return self._attributes[key]
         return None
 
-    def __setitem__(self, key: str, value: str):
-        """ Set attribute with brackets """
-        self._attributes[str(key)] = str(value)
+    def __setitem__(self, key: str | int, value: str | Self):
+        """ Set attribute or element with brackets operator """
+        if isinstance(key, int) and isinstance(value, Element):
+            self._elements[key] = value
+        elif isinstance(key, str) and isinstance(value, str):
+            self._attributes[str(key)] = str(value)
 
-    def __contains__(self, key: str) -> bool:
-        """ Check if attribute exists """
-        return key in self._attributes
+    def __contains__(self, key: str | Self) -> bool:
+        """ Check if attribute or element exists """
+        if isinstance(key, str):
+            return key in self._attributes
+        elif isinstance(key, Element):
+            return key in self._elements
+        return False
 
     @classmethod
     def new(cls, etype: ElementType, **attributes: dict):
