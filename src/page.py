@@ -32,16 +32,15 @@ class Page:
 
     def __getitem__(self, key: str | int) -> str | Element | None:
         """ Get attribute or element with brackets operator """
-        if isinstance(key, int):
+        if isinstance(key, int) and key < len(self._elements):
             return self._elements[key]
-        elif isinstance(key, str):
-            if key in self._attributes:
-                return self._attributes[key]
+        elif isinstance(key, str) and key in self._attributes:
+            return self._attributes[key]
         return None
 
     def __setitem__(self, key: str | int, value: str | Element):
         """ Set attribute or element with brackets operator """
-        if isinstance(key, int) and isinstance(value, Element):
+        if isinstance(key, int) and isinstance(value, Element) and key < len(self._elements):
             self._elements[key] = value
         elif isinstance(key, str) and isinstance(value, str):
             self._attributes[str(key)] = str(value)
