@@ -103,7 +103,7 @@ class Element:
     @property
     def elements(self) -> list[Self]:
         """ List of elements """
-        return self.elements
+        return self._elements
 
     def is_region(self) -> bool:
         """ Check if the element is a region """
