@@ -107,7 +107,7 @@ class Element:
 
     def is_region(self) -> bool:
         """ Check if the element is a region """
-        return self._etype.value.contains('Region')
+        return 'Region' in self._etype.value
 
     def contains_text(self) -> bool:
         """ Check if the element contains text """
