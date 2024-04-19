@@ -137,3 +137,17 @@ class Element:
     def remove_element_by_index(self, index: int) -> Self:
         """ Remove an element from the elements list by its index """
         return self._elements.pop(index)
+
+    def get_coords_element(self) -> Self | None:
+        """ Returns the first Coords element. None if nothing found """
+        for element in self._elements:
+            if element.etype == ElementType.Coords:
+                return element
+        return None
+
+    def get_baseline_element(self):
+        """ Returns the first Baseline element. None if nothing found """
+        for element in self._elements:
+            if element.etype == ElementType.Baseline:
+                return element
+        return None
