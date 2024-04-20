@@ -3,7 +3,7 @@ Python package for working with PageXML files.
 
 ## Installation
 ```bash
-git clone https://github.com/jatzelberger/pagexml.git
+git clone https://github.com/jahtz/pagexml.git
 pip3 install -r ./pagexml/requirements.txt
 ```
 
