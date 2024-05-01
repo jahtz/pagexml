@@ -1,4 +1,4 @@
-from typing import Self
+from typing_extensions import Self
 
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import Point as ShapelyPoint
