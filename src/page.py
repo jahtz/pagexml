@@ -144,3 +144,7 @@ class Page:
     def remove_element_by_index(self, index: int) -> Element:
         """ Remove an element from the elements list by its index """
         return self._elements.pop(index)
+
+    def get_regions(self) -> list[Element]:
+        """ Get all regions """
+        return list([e for e in self._elements if e.is_region()])
