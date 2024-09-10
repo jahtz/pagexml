@@ -100,7 +100,7 @@ class Page:
     @property
     def elements(self) -> list[Element]:
         """ List of elements """
-        return self.elements
+        return self._elements
 
     @property
     def reading_order(self) -> list[str]:
