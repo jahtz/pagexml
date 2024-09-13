@@ -1,3 +1,5 @@
+from src.types import XMLType
+
 # pagexml
 Python package for working with PageXML files.
 
@@ -8,47 +10,71 @@ pip3 install -r ./pagexml/requirements.txt
 ```
 
 ## Usage
+#### Required imports
 ```python
-from pagexml import PageXML, Page, Element, ElementType
+from pagexml import PageXML, Page, Element, XMLType
+```
+#### Create a PageXML object
+```python
+# Method 1: Create a new PageXML
+pxml = PageXML.new('yourname')
 
-# Create a PageXMl object
-pxml = PageXML.new('your name or institution')  # new PageXML without any content
-pxml = PageXML.from_xml('path/to/file.xml')  # load PageXML from file
-pxml = PageXML.from_etree(etree)  # load PageXML from lxml.etree object
+# Method 2: Load a PageXML file
+pxml = PageXML.from_xml('path/to/file.xml')
 
-# Pages
-page1 = pxml.create_page(imageFilename='image.jpg', width=1000, height=1000, ...)  # create a new Page
-page2 = Page.new(**{'imageFilename': 'image.jpg', 'width': 1000, 'height': 1000, ...})  # create a new Page (without directly adding it to a PageXML object)
-pxml.add_page(page2)  # add a Page to the PageXML object manually
+# Method 3: Load a lxml etree:
+pxml = PageXML.from_etree(etree)
+```
 
+#### Pages
+```python
+# Create a new Page and add it to the PageXML object (attributes are passed as named arguments):
+page1 = pxml.create_page(imageFilename='image.jpg', imageWidth=1000, imageHeight=1000, ...)
 
-# Regions and Elements (Regions and Elements interchangeable)
-region = page1.create_element(ElementType.TextRegion, **{'id': 'r1', 'more_attrs':'attribute', ...})  # create a new Region, automatically added to ReadingOrder. Prevent with 'reading_order=False' argument
-line = Element.new(ElementType.TextLine, id='l1')  # create a new Element (without directly adding it to a Region object)
-region.add_element(line)  # add an Element to a Region object manually
+# Create a new Page
+page2 = Page.new(imageFilename='image.jpg', imageWidth=1000, imageHeight=1000, ...)
+pxml.add_page(page2)  # add manually
 
-# Access data
-line.text = 'Hello World!'  # add text to an Element
-line.text = None  # remove text from an Element
+# Get all regions
+regions = page3.get_regions()
 
-page1.set_attribute('imageFilename', 'new_image.jpg')  # set an attribute
-page1['imageFilename'] = 'new_image.jpg'  # same as above
+# Get all regions of a specific type:
+regions = page3.get_regions(xmltype=XMLType.TextRegion)
 
-del page1.attributes['imageFilename']  # remove an attribute
-page1.attributes.pop('imageFilename', None)  # same as above (prevents KeyError)
+# Get a regions (or child element by index):
+child = page3[0]
 
-region_at_0 = page1[0]  # access Pages, Regions and Elements by index
+# Loop over childs:
+for child in page:
+    ...
 
-for page in pxml:  # iterate over Pages
-    print(len(page))  # print number of Regions and Elements
+# Access attributes
+print(child['someAttribute'])
+child['someAttribute'] = 'newValue'
+```
 
-print('imageFilename' in page1)  # check for attribute
-print(region in page1)  # check for Region or Element
+#### Elements
+```python
+# Create a new Region or child Element (alternative to new() method)
+textregion = page1.create_element(XMLType.TextRegion, id='r1', ...)
+textline = textregion.create_element(XMLTYPE.TextLine, id='l1', ...)
 
-# Convert PageXML object to lxml.etree object
+# set text:
+textline.text = 'hello world'
+
+# get Coords element
+textline.get_coords()
+
+# get Baseline element
+textline.get_baseline()
+```
+
+#### Output PageXML object
+```python
+# Method 1: Convert PageXML object to lxml.etree object
 tree = pxml.to_etree()
 
-# Write PageXML object to file
+# Method 2: Write PageXML object to file
 pxml.to_xml('path/to/file.xml')
 ```
 

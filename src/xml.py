@@ -1,22 +1,40 @@
+# Copyright 2024 Janik Haitz
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from typing import Self, Optional, Union
 from pathlib import Path
-from typing import Self
 from datetime import datetime
 
 from lxml import etree
 
 from .page import Page
-from . import schema
+
+
+XMLNS = 'http://schema.primaresearch.org/PAGE/gts/pagecontent/2019-07-15'
+XMLNS_XSI = 'http://www.w3.org/2001/XMLSchema-instance'
+XSI_SCHEMA_LOCATION = 'http://schema.primaresearch.org/PAGE/gts/pagecontent/2019-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2019-07-15/pagecontent.xsd'
 
 
 class PageXML:
-    def __init__(self, creator: str, created: str, last_change: str):
-        self._creator: str = creator
-        self._created: str = created
-        self._last_change: str = last_change
-        self._pages: list[Page] = []
+    def __init__(self, creator: Optional[str] = None, created: Optional[str] = None, last_change: Optional[str] = None):
+        self._creator: Optional[str] = creator
+        self._created: Optional[str] = created
+        self._last_change: Optional[str] = last_change
+        self._pages: list = []
 
     def __len__(self) -> int:
-        """ Return number of pages """
+        """ Return the number of pages """
         return len(self._pages)
 
     def __iter__(self) -> Self:
@@ -51,9 +69,10 @@ class PageXML:
         return False
 
     @classmethod
-    def new(cls, creator: str = 'ZPD Wuerzburg'):
+    def new(cls, creator: str = 'PageXML by jahtz'):
         """ Create a new PageXML object from scratch """
         return cls(creator, datetime.now().isoformat(), datetime.now().isoformat())
+
 
     @classmethod
     def from_etree(cls, tree: etree.Element) -> Self:
@@ -69,43 +88,38 @@ class PageXML:
             pxml = cls(creator, created, last_change)
         else:
             pxml = cls.new()
-
         # page elements
         if (pages := tree.findall('./{*}Page')) is not None:
             for page_tree in pages:
                 pxml.add_page(Page.from_etree(page_tree))
-
         return pxml
 
     @classmethod
-    def from_xml(cls, fp: str | Path) -> Self:
+    def from_xml(cls, fp: Union[Path, str]) -> Self:
         """ Create a new PageXML object from a xml string """
         parser = etree.XMLParser(remove_blank_text=True)
         tree = etree.parse(fp, parser).getroot()
         return cls.from_etree(tree)
 
+
     def to_etree(self):
         """ Convert the PageXML object to a xml etree element """
-        self.last_change_now()
-
+        self.change()
         # create root element
         xsi_qname = etree.QName("http://www.w3.org/2001/XMLSchema-instance", 'schemaLocation')
-        nsmap = {None: schema.xmlns, 'xsi': schema.xmlns_xsi}
-        root = etree.Element('PcGts', {xsi_qname: schema.xsi_schemaLocation}, nsmap=nsmap)
-
+        nsmap = {None: XMLNS, 'xsi': XMLNS_XSI}
+        root = etree.Element('PcGts', {xsi_qname: XSI_SCHEMA_LOCATION}, nsmap=nsmap)
         # create metadata element
         metadata = etree.SubElement(root, 'Metadata')
         etree.SubElement(metadata, 'Creator').text = self._creator
         etree.SubElement(metadata, 'Created').text = self._created
         etree.SubElement(metadata, 'LastChange').text = self._last_change
-
         # create page elements
         for page in self._pages:
             root.append(page.to_etree())
-
         return root
 
-    def to_xml(self, fp: str | Path):
+    def to_xml(self, fp: Union[Path, str]):
         """ Write the PageXML object to a file """
         with open(fp, 'wb') as f:
             f.write(etree.tostring(self.to_etree(), pretty_print=True, encoding='utf-8', xml_declaration=True))
@@ -116,7 +130,7 @@ class PageXML:
         return self._creator
 
     @creator.setter
-    def creator(self, creator: str):
+    def creator(self, creator: str) -> None:
         """ Set the creator of the PageXML file """
         self._creator = creator
 
@@ -126,7 +140,7 @@ class PageXML:
         return self._created
 
     @created.setter
-    def created(self, created: str):
+    def created(self, created: str) -> None:
         """ Set the date and time of the creation of the PageXML file (ISO format)"""
         self._created = created
 
@@ -136,11 +150,11 @@ class PageXML:
         return self._last_change
 
     @last_change.setter
-    def last_change(self, last_change: str):
+    def last_change(self, last_change: str) -> None:
         """ Set the date and time of the last change of the PageXML file (ISO format)"""
         self._last_change = last_change
 
-    def last_change_now(self):
+    def change(self) -> None:
         """ Update the last_change attribute to the current time """
         self._last_change = datetime.now().isoformat()
 
@@ -149,27 +163,28 @@ class PageXML:
         """ List of pages """
         return self._pages
 
-    def add_page(self, page: Page, index: int = None):
+    def add_page(self, page: Page, index: Optional[int] = None) -> None:
         """ Add a page to the pages list """
         if index is None:
             self._pages.append(page)
         else:
             self._pages.insert(index, page)
 
-    def create_page(self, index: int = None, **attributes) -> Page:
+    def create_page(self, index: Optional[int] = None, **attributes: str) -> Page:
         """ Create a new page and add it to the pages list """
         page = Page.new(**attributes)
         self.add_page(page, index)
         return page
 
-    def remove_page(self, page: Page):
+    def remove_page(self, page: Union[Page, int]) -> Optional[Page]:
         """ Remove a page from the pages list """
-        self._pages.remove(page)
+        if isinstance(page, int) and page < len(self._pages):
+            return self._pages.pop(page)
+        elif isinstance(page, Page) and page in self._pages:
+            self._pages.remove(page)
+            return page
+        return None
 
-    def remove_page_by_index(self, index: int) -> Page:
-        """ Remove a page at a specific index """
-        return self._pages.pop(index)
-
-    def clear_pages(self):
+    def clear(self):
         """ Remove all pages """
         self._pages.clear()

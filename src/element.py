@@ -1,19 +1,33 @@
-from typing import Self
+# Copyright 2024 Janik Haitz
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from typing import Self, Optional, Union
 
 from lxml import etree
 
-from .types import ElementType
+from .types import XMLType
 
 
 class Element:
-    def __init__(self, etype: ElementType, attributes: dict):
-        self._etype: ElementType = etype
-        self._attributes: dict = attributes
+    def __init__(self, xmltype: XMLType, attributes: Optional[dict[str, str]] = None):
+        self._xmltype: XMLType = xmltype
+        self._attributes: dict[str, str] = {} if attributes is None else attributes
         self._elements: list[Element] = []
-        self._text: str | None = None
+        self._text: Optional[str] = None
 
     def __len__(self) -> int:
-        """ Return number of elements """
+        """ Return the number of elements """
         return len(self._elements)
 
     def __iter__(self) -> Self:
@@ -30,7 +44,7 @@ class Element:
         else:
             raise StopIteration
 
-    def __getitem__(self, key: str | int) -> str | Self | None:
+    def __getitem__(self, key: Union[int, str]) -> Optional[Union[Self, str]]:
         """ Get attribute or element with brackets operator """
         if isinstance(key, int) and key < len(self._elements):
             return self._elements[key]
@@ -38,14 +52,14 @@ class Element:
             return self._attributes[key]
         return None
 
-    def __setitem__(self, key: str | int, value: str | Self):
+    def __setitem__(self, key: Union[int, str], value: Union[Self, str]) -> None:
         """ Set attribute or element with brackets operator """
         if isinstance(key, int) and isinstance(value, Element) and key < len(self._elements):
             self._elements[key] = value
         elif isinstance(key, str) and isinstance(value, str):
             self._attributes[str(key)] = str(value)
 
-    def __contains__(self, key: str | Self) -> bool:
+    def __contains__(self, key: Union[Self, str]) -> bool:
         """ Check if attribute or element exists """
         if isinstance(key, str):
             return key in self._attributes
@@ -54,15 +68,15 @@ class Element:
         return False
 
     @classmethod
-    def new(cls, etype: ElementType, **attributes: dict):
+    def new(cls, xmltype: XMLType, **attributes: str) -> Self:
         """ Create a new Element object from scratch """
-        attributes = {k: v for k, v in attributes.items() if v is not None}
-        return cls(etype, attributes)
+        attributes = {str(k): str(v) for k, v in attributes.items() if v is not None}
+        return cls(xmltype, attributes)
 
     @classmethod
     def from_etree(cls, tree: etree.Element) -> Self:
         """ Create a new Element object from a xml etree element """
-        element = cls(ElementType(tree.tag.split('}')[1]), dict(tree.items()))
+        element = cls(XMLType(tree.tag.split('}')[1]), dict(tree.items()))
         element.text = tree.text
         for child in tree:
             element.add_element(Element.from_etree(child))
@@ -71,84 +85,110 @@ class Element:
     def to_etree(self) -> etree.Element:
         """ Convert the Element object to a xml etree element """
         # create element
-        element = etree.Element(self._etype.value, **self._attributes)
+        element = etree.Element(self._xmltype.value, **self._attributes)
         if self._text is not None:
             element.text = self._text
-
         # add elements
         for child in self._elements:
             element.append(child.to_etree())
-
         return element
 
     @property
-    def etype(self) -> ElementType:
-        """ Element type """
-        return self._etype
+    def xmltype(self) -> XMLType:
+        """ Get the type of the element """
+        return self._xmltype
 
     @property
-    def attributes(self) -> dict:
-        """ Element attributes """
+    def attributes(self) -> dict[str, str]:
+        """ Get the elements attributes """
         return self._attributes
 
     @property
-    def text(self) -> str | None:
-        """ Element text """
+    def id(self) -> Optional[str]:
+        """ Get the element id """
+        return self._attributes.get('id', None)
+
+    @id.setter
+    def id(self, _id: Optional[str]) -> None:
+        self._attributes['id'] = _id
+
+    @property
+    def type(self) -> Optional[str]:
+        """ Get the element type """
+        return self._attributes.get('id', None)
+
+    @type.setter
+    def type(self, _type: Optional[str]) -> None:
+        """ Set the element type """
+        self._attributes['_type'] = _type
+
+    @property
+    def text(self) -> Optional[str]:
+        """ Get text of the element """
         return self._text
 
     @text.setter
-    def text(self, value: str | None):
+    def text(self, value: Optional[str]) -> None:
         """ Set the element text """
         self._text = value
 
     @property
     def elements(self) -> list[Self]:
-        """ List of elements """
+        """ Get the list of elements """
         return self._elements
 
     def is_region(self) -> bool:
         """ Check if the element is a region """
-        return 'Region' in self._etype.value
+        return 'Region' in self._xmltype.value
 
     def contains_text(self) -> bool:
-        """ Check if the element contains text """
+        """ Check if the element contains any text """
         return self._text is not None
 
-    def set_attribute(self, key: str, value: str):
+    def set_attribute(self, key: str, value: str) -> None:
         """ Set an attribute """
         self._attributes[key] = value
 
-    def remove_attribute(self, key: str):
-        """ Remove an attribute """
+    def delete_attribute(self, key: str) -> None:
+        """ Delete an attribute """
         self._attributes.pop(key, None)
 
-    def add_element(self, element: Self, index: int | None = None):
+    def add_element(self, element: Self, index: Optional[int] = None) -> None:
         """ Add an element to the elements list. """
         if index is None:
             self._elements.append(element)
         else:
             self._elements.insert(index, element)
 
-    def create_element(self, etype: ElementType, index: int = None, **attributes: dict) -> Self:
+    def create_element(self, xmltype: XMLType, index: Optional[int] = None, **attributes: str) -> Self:
         """ Create a new element and add it to the elements list """
-        element = Element.new(etype, **attributes)
+        element = Element.new(xmltype, **attributes)
         self.add_element(element, index)
         return element
 
-    def remove_element_by_index(self, index: int) -> Self:
-        """ Remove an element from the elements list by its index """
-        return self._elements.pop(index)
+    def remove_element(self, element: Union[int, Self]) -> Optional[Self]:
+        """ Remove an element from the elements list """
+        if isinstance(element, int) and element < len(self._elements):
+            return self._elements.pop(element)
+        elif isinstance(element, Element) and element in self._elements:
+            self._elements.remove(element)
+            return element
+        return None
 
-    def get_coords_element(self) -> Self | None:
+    def get_coords(self) -> Optional[Self]:
         """ Returns the first Coords element. None if nothing found """
         for element in self._elements:
-            if element.etype == ElementType.Coords:
+            if element.xmltype == XMLType.Coords:
                 return element
         return None
 
-    def get_baseline_element(self):
+    def get_baseline(self) -> Optional[Self]:
         """ Returns the first Baseline element. None if nothing found """
         for element in self._elements:
-            if element.etype == ElementType.Baseline:
+            if element.xmltype == XMLType.Baseline:
                 return element
         return None
+
+    def clear(self):
+        """ Remove all elements """
+        self._elements.clear()
