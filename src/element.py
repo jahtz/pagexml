@@ -46,18 +46,18 @@ class Element:
 
     def __getitem__(self, key: Union[int, str]) -> Optional[Union[Self, str]]:
         """ Get attribute or element with brackets operator """
-        if isinstance(key, int) and key < len(self._elements):
-            return self._elements[key]
+        if isinstance(key, int) and len(self._elements) > 0:
+            return self._elements[min(key, len(self._elements)-1)]
         elif isinstance(key, str) and key in self._attributes:
             return self._attributes[key]
         return None
 
     def __setitem__(self, key: Union[int, str], value: Union[Self, str]) -> None:
         """ Set attribute or element with brackets operator """
-        if isinstance(key, int) and isinstance(value, Element) and key < len(self._elements):
-            self._elements[key] = value
-        elif isinstance(key, str) and isinstance(value, str):
-            self._attributes[str(key)] = str(value)
+        if isinstance(key, int) and isinstance(value, Element) and len(self._elements) > 0:
+            self._elements[min(key, len(self._elements)-1)] = value
+        elif isinstance(key, str):
+            self._attributes[key] = str(value)
 
     def __contains__(self, key: Union[Self, str]) -> bool:
         """ Check if attribute or element exists """
@@ -110,17 +110,23 @@ class Element:
 
     @id.setter
     def id(self, _id: Optional[str]) -> None:
-        self._attributes['id'] = _id
+        if _id is None:
+            self._attributes.pop('id', None)
+        else:
+            self._attributes['id'] = str(_id)
 
     @property
     def type(self) -> Optional[str]:
         """ Get the element type """
-        return self._attributes.get('id', None)
+        return self._attributes.get('type', None)
 
     @type.setter
     def type(self, _type: Optional[str]) -> None:
         """ Set the element type """
-        self._attributes['_type'] = _type
+        if _type is None:
+            self._attributes.pop('type', None)
+        else:
+            self._attributes['type'] = str(_type)
 
     @property
     def text(self) -> Optional[str]:
@@ -130,7 +136,7 @@ class Element:
     @text.setter
     def text(self, value: Optional[str]) -> None:
         """ Set the element text """
-        self._text = value
+        self._text = None if value is None else str(value)
 
     @property
     def elements(self) -> list[Self]:
@@ -145,13 +151,16 @@ class Element:
         """ Check if the element contains any text """
         return self._text is not None
 
-    def set_attribute(self, key: str, value: str) -> None:
+    def set_attribute(self, key: str, value: Optional[str]) -> None:
         """ Set an attribute """
-        self._attributes[key] = value
+        if value is None:
+            self._attributes.pop(str(key), None)
+        else:
+            self._attributes[str(key)] = str(value)
 
     def delete_attribute(self, key: str) -> None:
         """ Delete an attribute """
-        self._attributes.pop(key, None)
+        self._attributes.pop(str(key), None)
 
     def add_element(self, element: Self, index: Optional[int] = None) -> None:
         """ Add an element to the elements list. """

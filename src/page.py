@@ -46,18 +46,18 @@ class Page:
 
     def __getitem__(self, key: Union[str, int]) -> Optional[Union[Element, str]]:
         """ Get attribute or element with brackets operator """
-        if isinstance(key, int) and key < len(self._elements):
-            return self._elements[key]
+        if isinstance(key, int) and len(self._elements) > 0:
+            return self._elements[min(key, len(self._elements)-1)]
         elif isinstance(key, str) and key in self._attributes:
             return self._attributes[key]
         return None
 
     def __setitem__(self, key: Union[str, int], value: Union[Element, str]) -> None:
         """ Set attribute or element with brackets operator """
-        if isinstance(key, int) and isinstance(value, Element) and key < len(self._elements):
-            self._elements[key] = value
-        elif isinstance(key, str) and isinstance(value, str):
-            self._attributes[str(key)] = str(value)
+        if isinstance(key, int) and isinstance(value, Element) and len(self._elements) > 0:
+            self._elements[min(key, len(self._elements)-1)] = value
+        elif isinstance(key, str):
+            self._attributes[key] = str(value)
 
     def __contains__(self, key: Union[Element, str]) -> bool:
         """ Check if attribute or element exists """
@@ -125,7 +125,10 @@ class Page:
     @image_filename.setter
     def image_filename(self, filename: str) -> None:
         """ Set the image filename """
-        self._attributes['imageFilename'] = filename
+        if filename is None:
+            self._attributes.pop('imageFilename', None)
+        else:
+            self._attributes['imageFilename'] = str(filename)
 
     @property
     def image_width(self) -> Optional[int]:
@@ -138,7 +141,10 @@ class Page:
     @image_width.setter
     def image_width(self, image_width: Union[int, str]) -> None:
         """ Set the image width """
-        self._attributes['imageWidth'] = str(image_width)
+        if image_width is None:
+            self._attributes.pop('imageWidth', None)
+        else:
+            self._attributes['imageWidth'] = str(image_width)
 
     @property
     def image_height(self) -> Optional[int]:
@@ -151,20 +157,26 @@ class Page:
     @image_height.setter
     def image_height(self, image_height: Union[int, str]) -> None:
         """ Set the image height """
-        self._attributes['imageHeight'] = str(image_height)
+        if image_height is None:
+            self._attributes.pop('imageHeight', None)
+        else:
+            self._attributes['imageHeight'] = str(image_height)
 
     @reading_order.setter
     def reading_order(self, reading_order: list[str]) -> None:
         """ Set the reading order """
         self._ro = reading_order
 
-    def set_attribute(self, key: str, value: str) -> None:
+    def set_attribute(self, key: str, value: Optional[str]) -> None:
         """ Set an attribute """
-        self._attributes[key] = value
+        if value is None:
+            self._attributes.pop(str(key), None)
+        else:
+            self._attributes[str(key)] = str(key)
 
     def delete_attribute(self, key: str) -> None:
         """ Delete an attribute """
-        self._attributes.pop(key, None)
+        self._attributes.pop(str(key), None)
 
     def add_element(self, element: Element, index: Optional[int] = None, reading_order: bool = True) -> None:
         """ Add an element to the elements list. """

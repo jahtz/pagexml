@@ -53,14 +53,14 @@ class PageXML:
 
     def __getitem__(self, key: int) -> Page | None:
         """ Get page with brackets operator """
-        if key < len(self._pages):
-            return self._pages[key]
+        if len(self._pages) > 0:
+            return self._pages[min(key, len(self._pages)-1)]
         return None
 
     def __setitem__(self, key: int, value: Page):
         """ Set page with brackets operator """
-        if key < len(self._pages):
-            self._pages[key] = value
+        if len(self._pages) > 0:
+            self._pages[min(key, len(self._pages)-1)] = value
 
     def __contains__(self, key: Page) -> bool:
         """ Check if page exists """
@@ -132,7 +132,7 @@ class PageXML:
     @creator.setter
     def creator(self, creator: str) -> None:
         """ Set the creator of the PageXML file """
-        self._creator = creator
+        self._creator = str(creator)
 
     @property
     def created(self) -> str:
@@ -140,9 +140,12 @@ class PageXML:
         return self._created
 
     @created.setter
-    def created(self, created: str) -> None:
+    def created(self, created: Union[str, datetime]) -> None:
         """ Set the date and time of the creation of the PageXML file (ISO format)"""
-        self._created = created
+        if isinstance(created, datetime):
+            self._created = created.isoformat()
+        else:
+            self._created = created
 
     @property
     def last_change(self) -> str:
@@ -150,9 +153,12 @@ class PageXML:
         return self._last_change
 
     @last_change.setter
-    def last_change(self, last_change: str) -> None:
+    def last_change(self, last_change: Union[str, datetime]) -> None:
         """ Set the date and time of the last change of the PageXML file (ISO format)"""
-        self._last_change = last_change
+        if isinstance(last_change, datetime):
+            self._last_change = last_change.isoformat()
+        else:
+            self._last_change = last_change
 
     def change(self) -> None:
         """ Update the last_change attribute to the current time """
